@@ -7,7 +7,10 @@ import time
 import requests
 import json
 
+print("script loaded ... start init now")
+
 playStatus = 0
+initStatus = 0
 
 def setVolume(status):
 
@@ -27,7 +30,7 @@ def getState(method):
 
     data = {'jsonrpc': '2.0', 'id': 1, 'method': method}
     response = requests.post('http://192.168.178.192:6680/mopidy/rpc', headers=headers, json=data)
-    #print(response.json())
+    print(response.json())
     result = response.json()['result']
     print(result)
     return result
@@ -39,15 +42,30 @@ def getStateParams(method, params):
 
     data = {'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params}
     response = requests.post('http://192.168.178.192:6680/mopidy/rpc', headers=headers, json=data)
+    print(response.json())
     result = response.json()['result']
     print(result)
     return result
 
 def setInitalPlayState():
     global playStatus
-    state = getState('core.playback.get_state')
-    if state == "playing":
-        playStatus = 1
+    global initStatus
+    try:
+    	state = getState('core.playback.get_state')
+    	if state == "playing":
+        	playStatus = 1
+	else:
+		print("not playing")
+		#http://mp3stream7.apasf.apa.at:8000/listen.pls & mms://apasf.apa.at/OE3_Live_Audio
+		#getStateParams('core.mixer.set_volume',{'volume':volume})
+		#getState('mopidy.audio.prepare_change')
+		getStateParams('core.tracklist.add',{'uri':'http://mp3stream7.apasf.apa.at:8000/listen.pls & mms://apasf.apa.at/OE3_Live_Audio'})
+	initStatus = 1
+    except requests.exceptions.ConnectionError:
+	temp  = "Connection refused - try again in 10 sec"
+	print(temp)
+	time.sleep(10)
+	setInitalPlayState()
 
 setInitalPlayState()
 
