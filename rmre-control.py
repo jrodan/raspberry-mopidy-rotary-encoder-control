@@ -11,15 +11,15 @@ print("script loaded ... start init now")
 
 playStatus = 0
 initStatus = 0
+volume = 20
 
 def setVolume(status):
-
-    volume = int(getState('core.mixer.get_volume'))
-
+    global volume
+    #volumeLocal = int(getState('core.mixer.get_volume'))
     if(status == 0):
-        volume -= 20
+        volume -= 5
     else:
-        volume += 20
+        volume += 5
 
     getStateParams('core.mixer.set_volume',{'volume':volume})
 
@@ -50,6 +50,8 @@ def getStateParams(method, params):
 def setInitalPlayState():
     global playStatus
     global initStatus
+    global volume
+    
     try:
     	state = getState('core.playback.get_state')
     	if state == "playing":
@@ -61,6 +63,7 @@ def setInitalPlayState():
 		#getState('mopidy.audio.prepare_change')
 		getStateParams('core.tracklist.add',{'uri':'http://mp3stream7.apasf.apa.at:8000/listen.pls & mms://apasf.apa.at/OE3_Live_Audio'})
 	initStatus = 1
+	volume = int(getState('core.mixer.get_volume'))
     except requests.exceptions.ConnectionError:
 	temp  = "Connection refused - try again in 10 sec"
 	print(temp)
